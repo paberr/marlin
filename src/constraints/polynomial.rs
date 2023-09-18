@@ -1,5 +1,5 @@
 use crate::{PhantomData, PrimeField, SynthesisError};
-use ark_nonnative_field::NonNativeFieldVar;
+use ark_r1cs_std::fields::nonnative::NonNativeFieldVar;
 use ark_r1cs_std::fields::FieldVar;
 
 pub struct AlgebraForAHP<F: PrimeField, CF: PrimeField> {

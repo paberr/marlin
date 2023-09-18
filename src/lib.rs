@@ -12,20 +12,20 @@
 #![deny(stable_features, unreachable_pub, non_shorthand_field_patterns)]
 #![deny(unused_attributes, unused_imports, unused_mut)]
 #![deny(renamed_and_removed_lints, stable_features, unused_allocation)]
-#![deny(unused_comparisons, bare_trait_objects, unused_must_use, const_err)]
+#![deny(unused_comparisons, bare_trait_objects, unused_must_use)]
 #![forbid(unsafe_code)]
 #![allow(clippy::op_ref)]
 
 use crate::ahp::prover::ProverMsg;
 use ahp::CryptographicSpongeWithDefault;
-use ark_ff::{to_bytes, PrimeField, ToConstraintField};
+use ark_crypto_primitives::sponge::{Absorb, CryptographicSponge};
+use ark_ff::{PrimeField, ToConstraintField};
 use ark_poly::{univariate::DensePolynomial, EvaluationDomain, GeneralEvaluationDomain};
 use ark_poly_commit::{
     challenge::ChallengeGenerator, Evaluations, LabeledCommitment, LabeledPolynomial,
     PCUniversalParams, PolynomialCommitment,
 };
 use ark_relations::r1cs::{ConstraintSynthesizer, SynthesisError};
-use ark_sponge::{Absorb, CryptographicSponge};
 use ark_std::rand::RngCore;
 
 #[macro_use]
@@ -53,6 +53,8 @@ mod data_structures;
 pub use data_structures::*;
 
 pub mod constraints;
+
+mod macros;
 
 /// Implements an Algebraic Holographic Proof (AHP) for the R1CS indexed relation.
 pub mod ahp;
@@ -712,6 +714,7 @@ where
         let params = S::default_params();
         let mut opening_challenges = ChallengeGenerator::<F, _>::new_multivariate(S::new(&params));
 
+        let rng = &mut ark_poly_commit::optional_rng::OptionalRng(zk_rng);
         let evaluations_are_correct = PC::check_combinations(
             &index_vk.verifier_key,
             &lc_s,
@@ -720,7 +723,7 @@ where
             &evaluations,
             &proof.pc_proof,
             &mut opening_challenges,
-            zk_rng,
+            rng,
         )
         .map_err(Error::from_pc_err)?;
 

@@ -15,6 +15,7 @@ use ark_crypto_primitives::snark::{
     constraints::{SNARKGadget, UniversalSetupSNARKGadget},
     NonNativeFieldInputVar, UniversalSetupIndexError, SNARK,
 };
+use ark_crypto_primitives::sponge::{Absorb, CryptographicSponge};
 use ark_ff::{PrimeField, ToConstraintField};
 use ark_poly::univariate::DensePolynomial;
 use ark_poly_commit::optional_rng::OptionalRng;
@@ -25,7 +26,6 @@ use ark_relations::r1cs::{
     ConstraintSynthesizer, ConstraintSystemRef, LinearCombination, SynthesisError, Variable,
 };
 use ark_snark::UniversalSetupSNARK;
-use ark_sponge::{Absorb, CryptographicSponge};
 use ark_std::cmp::min;
 use ark_std::fmt::{Debug, Formatter};
 use ark_std::marker::PhantomData;

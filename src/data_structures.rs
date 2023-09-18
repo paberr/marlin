@@ -1,6 +1,7 @@
 use crate::ahp::indexer::*;
 use crate::ahp::prover::ProverMsg;
 use crate::Vec;
+use ark_crypto_primitives::sponge::CryptographicSponge;
 use ark_ff::PrimeField;
 use ark_poly::univariate::DensePolynomial;
 use ark_poly::{EvaluationDomain, GeneralEvaluationDomain};
@@ -9,12 +10,8 @@ use ark_poly_commit::{
     BatchLCProof, PolynomialCommitment,
 };
 use ark_relations::r1cs::SynthesisError;
-use ark_serialize::{CanonicalDeserialize, CanonicalSerialize, SerializationError};
-use ark_sponge::CryptographicSponge;
-use ark_std::{
-    format,
-    io::{Read, Write},
-};
+use ark_serialize::{CanonicalDeserialize, CanonicalSerialize};
+use ark_std::format;
 
 /* ************************************************************************* */
 /* ************************************************************************* */
@@ -45,15 +42,6 @@ pub struct IndexVerifierKey<
 }
 
 impl<F: PrimeField, S: CryptographicSponge, PC: PolynomialCommitment<F, DensePolynomial<F>, S>>
-    ark_ff::ToBytes for IndexVerifierKey<F, S, PC>
-{
-    fn write<W: Write>(&self, mut w: W) -> ark_std::io::Result<()> {
-        self.index_info.write(&mut w)?;
-        self.index_comms.write(&mut w)
-    }
-}
-
-impl<F: PrimeField, S: CryptographicSponge, PC: PolynomialCommitment<F, DensePolynomial<F>, S>>
     Clone for IndexVerifierKey<F, S, PC>
 {
     fn clone(&self) -> Self {
@@ -79,6 +67,7 @@ impl<F: PrimeField, S: CryptographicSponge, PC: PolynomialCommitment<F, DensePol
 /* ************************************************************************* */
 
 /// Verification key, prepared (preprocessed) for use in pairings.
+#[derive(CanonicalSerialize, CanonicalDeserialize)]
 pub struct PreparedIndexVerifierKey<
     F: PrimeField,
     S: CryptographicSponge,
@@ -228,7 +217,7 @@ impl<F: PrimeField, S: CryptographicSponge, PC: PolynomialCommitment<F, DensePol
     pub fn print_size_info(&self) {
         use ark_poly_commit::PCCommitment;
 
-        let size_of_fe_in_bytes = F::zero().into_repr().as_ref().len() * 8;
+        let size_of_fe_in_bytes = F::zero().into_bigint().as_ref().len() * 8;
         let mut num_comms_without_degree_bounds = 0;
         let mut num_comms_with_degree_bounds = 0;
         let mut size_bytes_comms_without_degree_bounds = 0;
@@ -237,15 +226,15 @@ impl<F: PrimeField, S: CryptographicSponge, PC: PolynomialCommitment<F, DensePol
         for c in self.commitments.iter().flatten() {
             if !c.has_degree_bound() {
                 num_comms_without_degree_bounds += 1;
-                size_bytes_comms_without_degree_bounds += c.size_in_bytes();
+                size_bytes_comms_without_degree_bounds += c.compressed_size();
             } else {
                 num_comms_with_degree_bounds += 1;
-                size_bytes_comms_with_degree_bounds += c.size_in_bytes();
+                size_bytes_comms_with_degree_bounds += c.compressed_size();
             }
         }
 
         let num_proofs = 1;
-        size_bytes_proofs += self.pc_proof.serialized_size();
+        size_bytes_proofs += self.pc_proof.compressed_size();
 
         let num_evals = self.evaluations.len();
         let evals_size_in_bytes = num_evals * size_of_fe_in_bytes;

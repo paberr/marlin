@@ -4,12 +4,12 @@ use crate::{
     constraints::data_structures::{IndexVerifierKeyVar, PreparedIndexVerifierKeyVar, ProofVar},
     Error, PhantomData, PrimeField, String, Vec,
 };
-use ark_nonnative_field::NonNativeFieldVar;
+use ark_crypto_primitives::sponge::{Absorb, CryptographicSponge};
 use ark_poly::univariate::DensePolynomial;
 use ark_poly_commit::{PCCheckRandomDataVar, PCCheckVar, PolynomialCommitment};
+use ark_r1cs_std::fields::nonnative::NonNativeFieldVar;
 use ark_r1cs_std::{bits::boolean::Boolean, fields::FieldVar, R1CSVar, ToConstraintFieldGadget};
 use ark_relations::ns;
-use ark_sponge::{Absorb, CryptographicSponge};
 
 pub struct Marlin<
     F: PrimeField,

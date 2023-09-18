@@ -1,12 +1,12 @@
 use crate::{String, ToString, Vec};
+use ark_crypto_primitives::sponge::constraints::CryptographicSpongeVar;
+use ark_crypto_primitives::sponge::CryptographicSponge;
 use ark_ff::{Field, PrimeField};
-use ark_nonnative_field::NonNativeFieldVar;
 use ark_poly::univariate::DensePolynomial;
 use ark_poly::{EvaluationDomain, GeneralEvaluationDomain};
 use ark_poly_commit::{LCTerm, LinearCombination};
+use ark_r1cs_std::fields::nonnative::NonNativeFieldVar;
 use ark_relations::r1cs::{ConstraintSystemRef, SynthesisError};
-use ark_sponge::constraints::CryptographicSpongeVar;
-use ark_sponge::CryptographicSponge;
 use ark_std::{borrow::Borrow, cfg_iter_mut, format, marker::PhantomData, vec};
 
 #[cfg(feature = "parallel")]
@@ -29,7 +29,7 @@ pub trait CryptographicSpongeWithDefault: CryptographicSponge {
     ///
     /// Replacement for the requirement of S::Parameters: Default to minimize the upwards impact of
     /// this implementation
-    fn default_params() -> Self::Parameters;
+    fn default_params() -> Self::Config;
 }
 
 /// The interface for a cryptographic sponge constraints on field `F`.
@@ -440,7 +440,7 @@ mod tests {
     use ark_ff::{One, UniformRand, Zero};
     use ark_poly::{
         univariate::{DenseOrSparsePolynomial, DensePolynomial},
-        Polynomial, UVPolynomial,
+        DenseUVPolynomial, Polynomial,
     };
 
     #[test]

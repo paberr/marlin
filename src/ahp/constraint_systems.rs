@@ -9,11 +9,8 @@ use ark_relations::{
     lc,
     r1cs::{ConstraintMatrices, ConstraintSystemRef},
 };
-use ark_serialize::{CanonicalDeserialize, CanonicalSerialize, SerializationError};
-use ark_std::{
-    cfg_iter_mut,
-    io::{Read, Write},
-};
+use ark_serialize::{CanonicalDeserialize, CanonicalSerialize};
+use ark_std::cfg_iter_mut;
 use derivative::Derivative;
 
 /* ************************************************************************* */

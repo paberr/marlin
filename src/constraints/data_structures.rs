@@ -3,13 +3,14 @@ use crate::ahp::{CryptographicSpongeVarNonNative, CryptographicSpongeWithDefault
 use crate::{
     constraints::verifier::Marlin as MarlinVerifierVar,
     data_structures::{IndexVerifierKey, PreparedIndexVerifierKey, Proof},
-    PrimeField, String, SynthesisError, ToString, Vec,
+    to_bytes, PrimeField, String, SynthesisError, ToString, Vec,
 };
-use ark_ff::{to_bytes, ToConstraintField};
-use ark_nonnative_field::NonNativeFieldVar;
+use ark_crypto_primitives::sponge::{Absorb, CryptographicSponge};
+use ark_ff::ToConstraintField;
 use ark_poly::univariate::DensePolynomial;
 use ark_poly::{EvaluationDomain, GeneralEvaluationDomain};
 use ark_poly_commit::{PCCheckVar, PolynomialCommitment, PrepareGadget};
+use ark_r1cs_std::fields::nonnative::NonNativeFieldVar;
 use ark_r1cs_std::{
     alloc::{AllocVar, AllocationMode},
     fields::fp::FpVar,
@@ -17,7 +18,6 @@ use ark_r1cs_std::{
     R1CSVar, ToBytesGadget, ToConstraintFieldGadget,
 };
 use ark_relations::r1cs::{ConstraintSystemRef, Namespace};
-use ark_sponge::{Absorb, CryptographicSponge};
 use ark_std::borrow::Borrow;
 use hashbrown::HashMap;
 

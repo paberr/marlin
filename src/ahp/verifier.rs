@@ -3,9 +3,9 @@
 use crate::ahp::indexer::IndexInfo;
 use crate::ahp::*;
 
+use ark_crypto_primitives::sponge::CryptographicSponge;
 use ark_ff::PrimeField;
 use ark_poly_commit::QuerySet;
-use ark_sponge::CryptographicSponge;
 
 /// State of the AHP verifier
 pub struct VerifierState<F: PrimeField> {

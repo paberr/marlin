@@ -344,10 +344,10 @@ mod marlin_recursion {
 mod fiat_shamir {
     use ark_ff::PrimeField;
     use ark_mnt4_298::{Fq, Fr};
-    use ark_nonnative_field::params::OptimizationType;
-    use ark_nonnative_field::NonNativeFieldVar;
     use ark_r1cs_std::alloc::AllocVar;
     use ark_r1cs_std::bits::uint8::UInt8;
+    use ark_r1cs_std::fields::nonnative::params::OptimizationType;
+    use ark_r1cs_std::fields::nonnative::NonNativeFieldVar;
     use ark_r1cs_std::R1CSVar;
     use ark_relations::r1cs::{ConstraintSystem, ConstraintSystemRef, OptimizationGoal};
     use ark_std::UniformRand;

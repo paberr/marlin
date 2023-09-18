@@ -7,12 +7,13 @@ use crate::{
     },
     PhantomData, PrimeField, String, ToString, Vec,
 };
-use ark_nonnative_field::NonNativeFieldVar;
+use ark_crypto_primitives::sponge::{constraints::CryptographicSpongeVar, CryptographicSponge};
 use ark_poly::univariate::DensePolynomial;
 use ark_poly_commit::{
     EvaluationsVar, LCTerm, LabeledPointVar, LinearCombinationCoeffVar, LinearCombinationVar,
     PCCheckVar, PolynomialCommitment, PrepareGadget, QuerySetVar,
 };
+use ark_r1cs_std::fields::nonnative::NonNativeFieldVar;
 use ark_r1cs_std::{
     alloc::AllocVar,
     bits::boolean::Boolean,
@@ -21,7 +22,6 @@ use ark_r1cs_std::{
     ToBitsGadget, ToConstraintFieldGadget,
 };
 use ark_relations::r1cs::ConstraintSystemRef;
-use ark_sponge::{constraints::CryptographicSpongeVar, CryptographicSponge};
 use hashbrown::{HashMap, HashSet};
 
 #[derive(Clone)]
@@ -280,7 +280,7 @@ where
         let x_padded_len = public_input.len().next_power_of_two() as u64;
 
         let mut interpolation_gadget = LagrangeInterpolationVar::<F, CF>::new(
-            F::get_root_of_unity(x_padded_len as usize).unwrap(),
+            F::get_root_of_unity(x_padded_len).unwrap(),
             x_padded_len,
             public_input,
         );
