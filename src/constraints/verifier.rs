@@ -1,5 +1,5 @@
 use crate::{
-    ahp::{CryptographicSpongeVarNonNative, CryptographicSpongeWithDefault},
+    ahp::CryptographicSpongeVarNonNative,
     constraints::ahp::AHPForR1CS,
     constraints::data_structures::{IndexVerifierKeyVar, PreparedIndexVerifierKeyVar, ProofVar},
     Error, PhantomData, PrimeField, String, Vec,
@@ -29,7 +29,7 @@ impl<F, CF, S, PC, PCG> Marlin<F, CF, S, PC, PCG>
 where
     F: PrimeField,
     CF: PrimeField + Absorb,
-    S: CryptographicSpongeWithDefault,
+    S: CryptographicSponge,
     PC: PolynomialCommitment<F, DensePolynomial<F>, S>,
     PCG: PCCheckVar<F, DensePolynomial<F>, PC, CF, S>,
     PCG::VerifierKeyVar: ToConstraintFieldGadget<CF>,

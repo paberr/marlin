@@ -8,7 +8,8 @@ mod tests {
         },
         Marlin as MarlinNative, MarlinRecursiveConfig, Proof,
     };
-    use ark_ec::{CurveCycle, PairingEngine, PairingFriendlyCycle};
+    use ark_crypto_primitives::sponge::poseidon::{constraints::PoseidonSpongeVar, PoseidonSponge};
+    use ark_ec::{pairing::Pairing, CurveCycle, PairingFriendlyCycle};
     use ark_ff::{Field, UniformRand};
     use ark_mnt4_298::{constraints::PairingVar as MNT4PairingVar, Fq, Fr, MNT4_298};
     use ark_mnt6_298::MNT6_298;
@@ -29,18 +30,17 @@ mod tests {
     #[derive(Copy, Clone, Debug)]
     struct MNT298Cycle;
     impl CurveCycle for MNT298Cycle {
-        type E1 = <MNT6_298 as PairingEngine>::G1Affine;
-        type E2 = <MNT4_298 as PairingEngine>::G1Affine;
+        type E1 = <MNT6_298 as Pairing>::G1;
+        type E2 = <MNT4_298 as Pairing>::G1;
     }
     impl PairingFriendlyCycle for MNT298Cycle {
         type Engine1 = MNT6_298;
         type Engine2 = MNT4_298;
     }
 
-    type FS = FiatShamirAlgebraicSpongeRng<Fr, Fq, PoseidonSponge<Fq>>;
     type MultiPC = MarlinKZG10<MNT4_298, DensePolynomial<Fr>, PoseidonSponge<Fr>>;
     type MarlinNativeInst =
-        MarlinNative<Fr, Fq, PoseidonSponge<Fr>, MultiPC, FS, MarlinRecursiveConfig>;
+        MarlinNative<Fr, Fq, PoseidonSponge<Fr>, MultiPC, MarlinRecursiveConfig>;
 
     type MultiPCVar =
         MarlinKZG10Gadget<MNT298Cycle, DensePolynomial<Fr>, MNT4PairingVar, PoseidonSponge<Fr>>;
@@ -220,10 +220,11 @@ mod tests {
         };
         // END: proof to proof_gadget
 
-        Marlin::<Fr, Fq, PoseidonSponge<Fr>, MultiPC, MultiPCVar>::verify::<
-            FiatShamirAlgebraicSpongeRng<Fr, Fq, PoseidonSponge<Fq>>,
-            FiatShamirAlgebraicSpongeRngVar<Fr, Fq, PoseidonSponge<Fq>, PoseidonSpongeVar<Fq>>,
-        >(&ivk_gadget, &public_input_gadget, &proof_gadget)
+        Marlin::<Fr, Fq, PoseidonSponge<Fr>, MultiPC, MultiPCVar>::verify::<PoseidonSpongeVar<Fr>>(
+            &ivk_gadget,
+            &public_input_gadget,
+            &proof_gadget,
+        )
         .unwrap()
         .enforce_equal(&Boolean::Constant(true))
         .unwrap();

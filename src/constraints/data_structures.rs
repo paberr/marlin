@@ -1,5 +1,5 @@
 use crate::ahp::prover::ProverMsg;
-use crate::ahp::{CryptographicSpongeVarNonNative, CryptographicSpongeWithDefault};
+use crate::ahp::CryptographicSpongeVarNonNative;
 use crate::{
     constraints::verifier::Marlin as MarlinVerifierVar,
     data_structures::{IndexVerifierKey, PreparedIndexVerifierKey, Proof},
@@ -146,7 +146,7 @@ impl<
 impl<
         F: PrimeField,
         CF: PrimeField,
-        S: CryptographicSpongeWithDefault,
+        S: CryptographicSponge,
         PC: PolynomialCommitment<F, DensePolynomial<F>, S>,
         PCG: PCCheckVar<F, DensePolynomial<F>, PC, CF, S>,
     > Clone for IndexVerifierKeyVar<F, CF, S, PC, PCG>
@@ -222,7 +222,7 @@ impl<F, CF, S, SVN, PC, PCG> PreparedIndexVerifierKeyVar<F, CF, S, SVN, PC, PCG>
 where
     F: PrimeField,
     CF: PrimeField + Absorb,
-    S: CryptographicSpongeWithDefault,
+    S: CryptographicSponge,
     SVN: CryptographicSpongeVarNonNative<F, CF, S>,
     PC: PolynomialCommitment<F, DensePolynomial<F>, S>,
     PCG: PCCheckVar<F, DensePolynomial<F>, PC, CF, S>,
@@ -293,7 +293,7 @@ impl<F, CF, S, SVN, PC, PCG> AllocVar<PreparedIndexVerifierKey<F, S, PC>, CF>
 where
     F: PrimeField,
     CF: PrimeField + Absorb,
-    S: CryptographicSpongeWithDefault,
+    S: CryptographicSponge,
     SVN: CryptographicSpongeVarNonNative<F, CF, S>,
     PC: PolynomialCommitment<F, DensePolynomial<F>, S>,
     PCG: PCCheckVar<F, DensePolynomial<F>, PC, CF, S>,

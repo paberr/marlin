@@ -1,12 +1,9 @@
 use crate::ahp::CryptographicSpongeVarNonNative;
-use crate::Error::IndexTooLarge;
-use crate::{
-    ahp::CryptographicSpongeWithDefault,
-    constraints::{
-        data_structures::{IndexVerifierKeyVar, PreparedIndexVerifierKeyVar, ProofVar},
-        verifier::Marlin as MarlinVerifierGadget,
-    },
+use crate::constraints::{
+    data_structures::{IndexVerifierKeyVar, PreparedIndexVerifierKeyVar, ProofVar},
+    verifier::Marlin as MarlinVerifierGadget,
 };
+use crate::Error::IndexTooLarge;
 use crate::{
     Box, IndexProverKey, IndexVerifierKey, Marlin, MarlinConfig, PreparedIndexVerifierKey, Proof,
     String, ToString, UniversalSRS, Vec,
@@ -124,7 +121,7 @@ impl<F, FSF, S, PC, MC> SNARK<F> for MarlinSNARK<F, FSF, S, PC, MC>
 where
     F: PrimeField + Absorb,
     FSF: PrimeField + Absorb,
-    S: CryptographicSpongeWithDefault,
+    S: CryptographicSponge,
     PC: PolynomialCommitment<F, DensePolynomial<F>, S>,
     MC: MarlinConfig,
     PC::VerifierKey: ToConstraintField<FSF>,
@@ -185,7 +182,7 @@ impl<F, FSF, S, PC, MC> UniversalSetupSNARK<F> for MarlinSNARK<F, FSF, S, PC, MC
 where
     F: PrimeField + Absorb,
     FSF: PrimeField + Absorb,
-    S: CryptographicSpongeWithDefault,
+    S: CryptographicSponge,
     PC: PolynomialCommitment<F, DensePolynomial<F>, S>,
     MC: MarlinConfig,
     PC::VerifierKey: ToConstraintField<FSF>,
@@ -235,7 +232,7 @@ pub struct MarlinSNARKGadget<F, FSF, S, SVN, PC, MC, PCG>
 where
     F: PrimeField,
     FSF: PrimeField,
-    S: CryptographicSpongeWithDefault,
+    S: CryptographicSponge,
     SVN: CryptographicSpongeVarNonNative<F, FSF, S>,
     PC: PolynomialCommitment<F, DensePolynomial<F>, S>,
     MC: MarlinConfig,
@@ -255,7 +252,7 @@ impl<F, FSF, S, SVN, PC, MC, PCG> SNARKGadget<F, FSF, MarlinSNARK<F, FSF, S, PC,
 where
     F: PrimeField + Absorb,
     FSF: PrimeField + Absorb,
-    S: CryptographicSpongeWithDefault,
+    S: CryptographicSponge,
     SVN: CryptographicSpongeVarNonNative<F, FSF, S>,
     PC: PolynomialCommitment<F, DensePolynomial<F>, S>,
     MC: MarlinConfig,
@@ -371,7 +368,7 @@ impl<F, FSF, S, SVN, PC, MC, PCG> UniversalSetupSNARKGadget<F, FSF, MarlinSNARK<
 where
     F: PrimeField + Absorb,
     FSF: PrimeField + Absorb,
-    S: CryptographicSpongeWithDefault,
+    S: CryptographicSponge,
     SVN: CryptographicSpongeVarNonNative<F, FSF, S>,
     PC: PolynomialCommitment<F, DensePolynomial<F>, S>,
     MC: MarlinConfig,
@@ -397,8 +394,8 @@ mod test {
     #[derive(Copy, Clone, Debug)]
     struct Mnt64298cycle;
     impl CurveCycle for Mnt64298cycle {
-        type E1 = <MNT6_298 as PairingEngine>::G1Affine;
-        type E2 = <MNT4_298 as PairingEngine>::G1Affine;
+        type E1 = <MNT6_298 as Pairing>::G1;
+        type E2 = <MNT4_298 as Pairing>::G1;
     }
     impl PairingFriendlyCycle for Mnt64298cycle {
         type Engine1 = MNT6_298;
@@ -407,7 +404,9 @@ mod test {
 
     use crate::constraints::snark::{MarlinSNARK, MarlinSNARKGadget};
     use ark_crypto_primitives::snark::{SNARKGadget, SNARK};
-    use ark_ec::{CurveCycle, PairingEngine, PairingFriendlyCycle};
+    use ark_crypto_primitives::sponge::poseidon::constraints::PoseidonSpongeVar;
+    use ark_crypto_primitives::sponge::poseidon::PoseidonSponge;
+    use ark_ec::{pairing::Pairing, CurveCycle, PairingFriendlyCycle};
     use ark_ff::{Field, UniformRand};
     use ark_mnt4_298::{
         constraints::PairingVar as MNT4PairingVar, Fq as MNT4Fq, Fr as MNT4Fr, MNT4_298,
@@ -462,31 +461,22 @@ mod test {
         MNT4Fq,
         PoseidonSponge<MNT4Fr>,
         MarlinKZG10<MNT4_298, DensePolynomial<MNT4Fr>, PoseidonSponge<MNT4Fr>>,
-        FS4,
         TestMarlinConfig,
     >;
-    type FS4 = FiatShamirAlgebraicSpongeRng<MNT4Fr, MNT4Fq, PoseidonSponge<MNT4Fq>>;
     type PCGadget4 = MarlinKZG10Gadget<
         Mnt64298cycle,
         DensePolynomial<MNT4Fr>,
         MNT4PairingVar,
         PoseidonSponge<MNT4Fr>,
     >;
-    type FSG4 = FiatShamirAlgebraicSpongeRngVar<
-        MNT4Fr,
-        MNT4Fq,
-        PoseidonSponge<MNT4Fq>,
-        PoseidonSpongeVar<MNT4Fq>,
-    >;
     type TestSNARKGadget = MarlinSNARKGadget<
         MNT4Fr,
         MNT4Fq,
         PoseidonSponge<MNT4Fr>,
+        PoseidonSpongeVar<MNT4Fr>,
         MarlinKZG10<MNT4_298, DensePolynomial<MNT4Fr>, PoseidonSponge<MNT4Fr>>,
-        FS4,
         TestMarlinConfig,
         PCGadget4,
-        FSG4,
     >;
 
     use ark_poly::univariate::DensePolynomial;
@@ -521,21 +511,21 @@ mod test {
         cs.set_optimization_goal(OptimizationGoal::Weight);
 
         let input_gadget = <TestSNARKGadget as SNARKGadget<
-            <MNT4_298 as PairingEngine>::Fr,
-            <MNT4_298 as PairingEngine>::Fq,
+            <MNT4_298 as Pairing>::ScalarField,
+            <MNT4_298 as Pairing>::BaseField,
             TestSNARK,
         >>::InputVar::new_input(ns!(cs, "new_input"), || Ok(vec![c]))
         .unwrap();
 
         let proof_gadget = <TestSNARKGadget as SNARKGadget<
-            <MNT4_298 as PairingEngine>::Fr,
-            <MNT4_298 as PairingEngine>::Fq,
+            <MNT4_298 as Pairing>::ScalarField,
+            <MNT4_298 as Pairing>::BaseField,
             TestSNARK,
         >>::ProofVar::new_witness(ns!(cs, "alloc_proof"), || Ok(proof))
         .unwrap();
         let vk_gadget = <TestSNARKGadget as SNARKGadget<
-            <MNT4_298 as PairingEngine>::Fr,
-            <MNT4_298 as PairingEngine>::Fq,
+            <MNT4_298 as Pairing>::ScalarField,
+            <MNT4_298 as Pairing>::BaseField,
             TestSNARK,
         >>::VerifyingKeyVar::new_constant(ns!(cs, "alloc_vk"), vk.clone())
         .unwrap();
@@ -547,8 +537,8 @@ mod test {
         );
 
         let verification_result = <TestSNARKGadget as SNARKGadget<
-            <MNT4_298 as PairingEngine>::Fr,
-            <MNT4_298 as PairingEngine>::Fq,
+            <MNT4_298 as Pairing>::ScalarField,
+            <MNT4_298 as Pairing>::BaseField,
             TestSNARK,
         >>::verify(&vk_gadget, &input_gadget, &proof_gadget)
         .unwrap();
@@ -572,8 +562,8 @@ mod test {
         let pvk = TestSNARK::process_vk(&vk).unwrap();
         let pvk_gadget =
             <TestSNARKGadget as SNARKGadget<
-                <MNT4_298 as PairingEngine>::Fr,
-                <MNT4_298 as PairingEngine>::Fq,
+                <MNT4_298 as Pairing>::ScalarField,
+                <MNT4_298 as Pairing>::BaseField,
                 TestSNARK,
             >>::ProcessedVerifyingKeyVar::new_constant(ns!(cs, "alloc_pvk"), pvk)
             .unwrap();

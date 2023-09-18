@@ -17,7 +17,6 @@
 #![allow(clippy::op_ref)]
 
 use crate::ahp::prover::ProverMsg;
-use ahp::CryptographicSpongeWithDefault;
 use ark_crypto_primitives::sponge::{Absorb, CryptographicSponge};
 use ark_ff::{PrimeField, ToConstraintField};
 use ark_poly::{univariate::DensePolynomial, EvaluationDomain, GeneralEvaluationDomain};
@@ -100,7 +99,7 @@ fn compute_vk_hash<F, FSF, S, PC>(vk: &IndexVerifierKey<F, S, PC>) -> Vec<FSF>
 where
     F: PrimeField,
     FSF: PrimeField,
-    S: CryptographicSpongeWithDefault,
+    S: CryptographicSponge,
     PC: PolynomialCommitment<F, DensePolynomial<F>, S>,
     PC::Commitment: ToConstraintField<FSF> + Absorb,
 {
@@ -112,7 +111,7 @@ where
 
 impl<F: PrimeField, FSF: PrimeField, S, PC, MC: MarlinConfig> Marlin<F, FSF, S, PC, MC>
 where
-    S: CryptographicSpongeWithDefault,
+    S: CryptographicSponge,
     F: Absorb,
     FSF: Absorb,
     PC: PolynomialCommitment<F, DensePolynomial<F>, S>,
