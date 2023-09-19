@@ -1,4 +1,4 @@
-use crate::ahp::CryptographicSpongeVarNonNative;
+use crate::ahp::{CryptographicSpongeVarNonNative, CryptographicSpongeWithDefault};
 use crate::constraints::{
     data_structures::{IndexVerifierKeyVar, PreparedIndexVerifierKeyVar, ProofVar},
     verifier::Marlin as MarlinVerifierGadget,
@@ -121,7 +121,7 @@ impl<F, FSF, S, PC, MC> SNARK<F> for MarlinSNARK<F, FSF, S, PC, MC>
 where
     F: PrimeField + Absorb,
     FSF: PrimeField + Absorb,
-    S: CryptographicSponge,
+    S: CryptographicSpongeWithDefault,
     PC: PolynomialCommitment<F, DensePolynomial<F>, S>,
     MC: MarlinConfig,
     PC::VerifierKey: ToConstraintField<FSF>,
@@ -182,7 +182,7 @@ impl<F, FSF, S, PC, MC> UniversalSetupSNARK<F> for MarlinSNARK<F, FSF, S, PC, MC
 where
     F: PrimeField + Absorb,
     FSF: PrimeField + Absorb,
-    S: CryptographicSponge,
+    S: CryptographicSpongeWithDefault,
     PC: PolynomialCommitment<F, DensePolynomial<F>, S>,
     MC: MarlinConfig,
     PC::VerifierKey: ToConstraintField<FSF>,
@@ -232,7 +232,7 @@ pub struct MarlinSNARKGadget<F, FSF, S, SVN, PC, MC, PCG>
 where
     F: PrimeField,
     FSF: PrimeField,
-    S: CryptographicSponge,
+    S: CryptographicSpongeWithDefault,
     SVN: CryptographicSpongeVarNonNative<F, FSF, S>,
     PC: PolynomialCommitment<F, DensePolynomial<F>, S>,
     MC: MarlinConfig,
@@ -252,7 +252,7 @@ impl<F, FSF, S, SVN, PC, MC, PCG> SNARKGadget<F, FSF, MarlinSNARK<F, FSF, S, PC,
 where
     F: PrimeField + Absorb,
     FSF: PrimeField + Absorb,
-    S: CryptographicSponge,
+    S: CryptographicSpongeWithDefault,
     SVN: CryptographicSpongeVarNonNative<F, FSF, S>,
     PC: PolynomialCommitment<F, DensePolynomial<F>, S>,
     MC: MarlinConfig,
@@ -368,7 +368,7 @@ impl<F, FSF, S, SVN, PC, MC, PCG> UniversalSetupSNARKGadget<F, FSF, MarlinSNARK<
 where
     F: PrimeField + Absorb,
     FSF: PrimeField + Absorb,
-    S: CryptographicSponge,
+    S: CryptographicSpongeWithDefault,
     SVN: CryptographicSpongeVarNonNative<F, FSF, S>,
     PC: PolynomialCommitment<F, DensePolynomial<F>, S>,
     MC: MarlinConfig,

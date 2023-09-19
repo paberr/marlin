@@ -23,6 +23,15 @@ pub mod verifier;
 /// A labeled DensePolynomial with coefficients over `F`
 pub type LabeledPolynomial<F> = ark_poly_commit::LabeledPolynomial<F, DensePolynomial<F>>;
 
+/// The interface for a cryptographic sponge with default parameters
+pub trait CryptographicSpongeWithDefault: CryptographicSponge {
+    /// Default parametes for the cryptographic sponge
+    ///
+    /// Replacement for the requirement of S::Parameters: Default to minimize the upwards impact of
+    /// this implementation
+    fn default_params() -> Self::Config;
+}
+
 /// The interface for a cryptographic sponge constraints on field `F`.
 /// A sponge can `absorb` or take in inputs and later `squeeze` or output bytes or field elements.
 /// The outputs are dependent on previous `absorb` and `squeeze` calls.
@@ -511,11 +520,7 @@ mod tests {
             divisor
                 .coeffs
                 .iter()
-                .filter_map(|f| if !f.is_zero() {
-                    Some(f.into_repr())
-                } else {
-                    None
-                })
+                .filter_map(|f| if !f.is_zero() { Some(f) } else { None })
                 .collect::<Vec<_>>()
         );
 
@@ -543,11 +548,7 @@ mod tests {
             quotient
                 .coeffs
                 .iter()
-                .filter_map(|f| if !f.is_zero() {
-                    Some(f.into_repr())
-                } else {
-                    None
-                })
+                .filter_map(|f| if !f.is_zero() { Some(f) } else { None })
                 .collect::<Vec<_>>()
         );
 

@@ -17,6 +17,7 @@
 #![allow(clippy::op_ref)]
 
 use crate::ahp::prover::ProverMsg;
+use ahp::CryptographicSpongeWithDefault;
 use ark_crypto_primitives::sponge::{Absorb, CryptographicSponge};
 use ark_ff::{PrimeField, ToConstraintField};
 use ark_poly::{univariate::DensePolynomial, EvaluationDomain, GeneralEvaluationDomain};
@@ -99,7 +100,7 @@ fn compute_vk_hash<F, FSF, S, PC>(vk: &IndexVerifierKey<F, S, PC>) -> Vec<FSF>
 where
     F: PrimeField,
     FSF: PrimeField,
-    S: CryptographicSponge,
+    S: CryptographicSpongeWithDefault,
     PC: PolynomialCommitment<F, DensePolynomial<F>, S>,
     PC::Commitment: ToConstraintField<FSF> + Absorb,
 {
@@ -111,7 +112,7 @@ where
 
 impl<F: PrimeField, FSF: PrimeField, S, PC, MC: MarlinConfig> Marlin<F, FSF, S, PC, MC>
 where
-    S: CryptographicSponge,
+    S: CryptographicSpongeWithDefault,
     F: Absorb,
     FSF: Absorb,
     PC: PolynomialCommitment<F, DensePolynomial<F>, S>,
@@ -357,14 +358,20 @@ where
         .map_err(Error::from_pc_err)?;
         end_timer!(first_round_comm_time);
 
+        let fcinput = first_comms
+            .clone()
+            .iter()
+            .map(|p| p.commitment().clone())
+            .collect::<Vec<_>>();
+
         if for_recursion {
-            sponge.absorb(&first_comms);
+            sponge.absorb(&fcinput);
             match prover_first_msg.clone() {
                 ProverMsg::EmptyMessage => (),
                 ProverMsg::FieldElements(v) => sponge.absorb(&v),
             }
         } else {
-            sponge.absorb(&to_bytes![first_comms, prover_first_msg].unwrap());
+            sponge.absorb(&to_bytes![fcinput, prover_first_msg].unwrap());
         }
 
         let (verifier_first_msg, verifier_state) =
@@ -386,14 +393,20 @@ where
         .map_err(Error::from_pc_err)?;
         end_timer!(second_round_comm_time);
 
+        let scinput = second_comms
+            .clone()
+            .iter()
+            .map(|p| p.commitment().clone())
+            .collect::<Vec<_>>();
+
         if for_recursion {
-            sponge.absorb(&second_comms);
+            sponge.absorb(&scinput);
             match prover_second_msg.clone() {
                 ProverMsg::EmptyMessage => (),
                 ProverMsg::FieldElements(v) => sponge.absorb(&v),
             }
         } else {
-            sponge.absorb(&to_bytes![second_comms, prover_second_msg].unwrap());
+            sponge.absorb(&to_bytes![scinput, prover_second_msg].unwrap());
         }
 
         let (verifier_second_msg, verifier_state) =
@@ -414,14 +427,20 @@ where
         .map_err(Error::from_pc_err)?;
         end_timer!(third_round_comm_time);
 
+        let tcinput = third_comms
+            .clone()
+            .iter()
+            .map(|p| p.commitment().clone())
+            .collect::<Vec<_>>();
+
         if for_recursion {
-            sponge.absorb(&third_comms);
+            sponge.absorb(&tcinput);
             match prover_third_msg.clone() {
                 ProverMsg::EmptyMessage => (),
                 ProverMsg::FieldElements(v) => sponge.absorb(&v),
             }
         } else {
-            sponge.absorb(&to_bytes![third_comms, prover_third_msg].unwrap());
+            sponge.absorb(&to_bytes![tcinput, prover_third_msg].unwrap());
         }
 
         let verifier_state =
